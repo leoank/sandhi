@@ -1,0 +1,405 @@
+//! One tailnet identity inside this process, a tailnet backend's dutavas (ADR-0001),
+//! through libtailscale's C API declared by hand: connections accepted on the tailnet,
+//! connections dialled through it, and the peer behind an address named from the
+//! identity's own status.
+//!
+//! Copied from saarthi's `saarthi-tailnet` at saarthi `954bc23` (saarthi ADR-0015,
+//! ADR-0048, ADR-0049; [[saarthi/EXP-20261112-rq8kgc]]) and trimmed of what only saarthi
+//! uses: tonic's connector and `Connected`, and the Android log directory (ADR-0002).
+
+mod ffi;
+
+use std::io;
+use std::os::fd::OwnedFd;
+use std::path::{Path, PathBuf};
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll};
+
+use anyhow::{Context as _, Result, bail};
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use tokio::net::UnixStream;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+
+/// What an identity is started with.
+#[derive(Clone, Debug)]
+pub struct Options {
+    /// The tailnet's name in sandhi's own config and logs.
+    pub name: String,
+    /// The node key and the rest of tsnet's state; created if missing.
+    pub dir: PathBuf,
+    /// The machine name on the tailnet, and so its MagicDNS name.
+    pub hostname: String,
+    /// The auth key, if any.
+    pub authkey: Option<AuthKey>,
+    /// The tailnet removes the machine soon after it goes offline: for tests.
+    pub ephemeral: bool,
+    /// How long a join may take before [`Tailnet::start`] gives up, or None to wait as long
+    /// as tsnet does. A join the tailnet will not let through without a person (a login,
+    /// an admin's approval) is given up within seconds either way when this is set. tsnet
+    /// cannot be stopped mid-join, so the given-up join keeps running in the background:
+    /// a caller that sets this tries again with a new state directory, not the same one.
+    pub give_up_after: Option<std::time::Duration>,
+}
+
+/// Where an identity's auth key comes from.
+#[derive(Clone)]
+pub enum AuthKey {
+    /// A file, read on each start while it exists; it is needed only until the first
+    /// join, and again if the tailnet logs the identity out.
+    File(PathBuf),
+    /// The key itself.
+    Value(String),
+}
+
+impl std::fmt::Debug for AuthKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AuthKey::File(p) => f.debug_tuple("File").field(p).finish(),
+            AuthKey::Value(_) => f.write_str("Value(..)"),
+        }
+    }
+}
+
+/// One tailnet identity. Dropping the last handle leaves the tailnet.
+pub struct Tailnet {
+    name: String,
+    sd: ffi::Server,
+}
+
+impl std::fmt::Debug for Tailnet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Tailnet").field("name", &self.name).finish()
+    }
+}
+
+/// Where a connection accepted on a tailnet came from.
+#[derive(Clone, Debug)]
+pub struct Remote {
+    tailnet: Arc<Tailnet>,
+    /// The caller's tailnet IP.
+    pub addr: String,
+}
+
+impl Remote {
+    pub fn tailnet_name(&self) -> &str {
+        &self.tailnet.name
+    }
+
+    /// Who the tailnet says the caller is.
+    pub async fn peer(&self) -> Option<Peer> {
+        self.tailnet.whois(&self.addr).await
+    }
+}
+
+/// Who holds a tailnet address, as the identity's own status names it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Peer {
+    pub host: String,
+    /// The owner's login, or the tags for a tagged machine.
+    pub login: String,
+}
+
+impl std::fmt::Display for Peer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ({})", self.host, self.login)
+    }
+}
+
+/// Whether tsnet has already joined from `dir`: it keeps its node key in this file.
+fn joined(dir: &Path) -> bool {
+    dir.join("tailscaled.state").exists()
+}
+
+impl Tailnet {
+    /// Joins the tailnet and waits until it is usable. The first join needs the auth key;
+    /// later starts use the state in `dir`.
+    pub async fn start(opts: Options) -> Result<Arc<Tailnet>> {
+        std::fs::create_dir_all(&opts.dir).with_context(|| format!("creating {}", opts.dir.display()))?;
+        restrict(&opts.dir)?;
+        // tsnet uses the key only when the identity has to log in: the first join, or
+        // after the tailnet logged it out. A file may be gone after the first join.
+        let authkey = match &opts.authkey {
+            Some(AuthKey::Value(key)) => Some(key.trim().to_string()),
+            Some(AuthKey::File(file)) => match std::fs::read_to_string(file) {
+                Ok(key) => Some(key.trim().to_string()),
+                Err(_) if joined(&opts.dir) => None,
+                Err(e) => return Err(e).with_context(|| format!("reading {}", file.display())),
+            },
+            None if joined(&opts.dir) => None,
+            None => bail!(
+                "tailnet {}: {} holds no state and no auth key was given",
+                opts.name,
+                opts.dir.display()
+            ),
+        };
+        // tsnet logs a lot; it goes to a file beside its state, not to ours.
+        let log = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(opts.dir.join("tsnet.log"))
+            .context("opening the tsnet log")?;
+        let dir = opts.dir.to_str().context("the tailnet state path is not UTF-8")?;
+        let sd = ffi::Server::new(
+            dir,
+            &opts.hostname,
+            authkey.as_deref(),
+            opts.ephemeral,
+            std::os::fd::IntoRawFd::into_raw_fd(log),
+        )
+            .with_context(|| format!("tailnet {}", opts.name))?;
+        let tailnet = Arc::new(Tailnet { name: opts.name.clone(), sd });
+        let up = tailnet.clone();
+        let mut joining = tokio::task::spawn_blocking(move || up.sd.up());
+        match opts.give_up_after {
+            None => joining.await?.with_context(|| format!("joining tailnet {}", opts.name))?,
+            Some(limit) => {
+                let deadline = tokio::time::Instant::now() + limit;
+                // When the tailnet first asked for a person, so a login with the key that is
+                // already under way gets a moment to finish.
+                let mut asked: Option<tokio::time::Instant> = None;
+                loop {
+                    tokio::select! {
+                        r = &mut joining => {
+                            r?.with_context(|| format!("joining tailnet {}", opts.name))?;
+                            break;
+                        }
+                        _ = tokio::time::sleep(std::time::Duration::from_millis(500)) => {
+                            if let Some(why) = waits_for_a_person(&tailnet.sd) {
+                                let since = *asked.get_or_insert_with(tokio::time::Instant::now);
+                                if since.elapsed() >= std::time::Duration::from_secs(3) {
+                                    bail!("joining tailnet {}: {why}", opts.name);
+                                }
+                            } else {
+                                asked = None;
+                            }
+                            if tokio::time::Instant::now() >= deadline {
+                                bail!("joining tailnet {}: no answer in {} s; this machine may be offline or the tailnet unreachable", opts.name, limit.as_secs());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        tracing::info!(tailnet = %opts.name, hostname = %opts.hostname, ips = %tailnet.sd.ips().unwrap_or_default(), "on the tailnet");
+        Ok(tailnet)
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// The identity's tailnet addresses, comma-separated.
+    pub fn ips(&self) -> String {
+        self.sd.ips().unwrap_or_default()
+    }
+
+    /// Connections accepted on `port`. The stream ends when accepting fails.
+    pub fn incoming(self: &Arc<Self>, port: u16) -> Result<ReceiverStream<io::Result<Conn>>> {
+        let listener = self.sd.listen(&format!(":{port}"))?;
+        let (tx, rx) = mpsc::channel(16);
+        let me = self.clone();
+        let rt = tokio::runtime::Handle::current();
+        // `tailscale_accept` blocks, so it gets a thread of its own.
+        std::thread::Builder::new()
+            .name(format!("tailnet-accept-{}", self.name))
+            .spawn(move || {
+                let _rt = rt.enter();
+                loop {
+                    let conn = match ffi::accept(listener) {
+                        Ok((fd, addr)) => stream(fd).map(|io| Conn {
+                            io,
+                            remote: Remote { tailnet: me.clone(), addr },
+                        }),
+                        Err(e) => {
+                            tracing::warn!(tailnet = %me.name, error = %format!("{e:#}"), "accepting stopped");
+                            return;
+                        }
+                    };
+                    if tx.blocking_send(conn).is_err() {
+                        return;
+                    }
+                }
+            })?;
+        Ok(ReceiverStream::new(rx))
+    }
+
+    /// A TCP connection to `host:port` on the tailnet. Right after a start from saved
+    /// state the name may not resolve yet; the caller retries as for any failed connect.
+    pub async fn dial(self: &Arc<Self>, addr: &str) -> io::Result<UnixStream> {
+        let me = self.clone();
+        let addr = addr.to_string();
+        let fd = tokio::task::spawn_blocking(move || me.sd.dial(&addr))
+            .await
+            .map_err(io::Error::other)?
+            .map_err(|e| io::Error::other(format!("{e:#}")))?;
+        stream(fd)
+    }
+
+    /// Who holds `addr` on this tailnet, or None when the status does not name it.
+    pub async fn whois(self: &Arc<Self>, addr: &str) -> Option<Peer> {
+        let me = self.clone();
+        let status = tokio::task::spawn_blocking(move || me.sd.status()).await.ok()?.ok()?;
+        peer_in(&status, addr)
+    }
+}
+
+/// Why a join is stuck waiting for a person, from tsnet's status: a login it cannot do with
+/// the key it has, or an admin's approval. None while it is getting on with it.
+fn waits_for_a_person(sd: &ffi::Server) -> Option<&'static str> {
+    let status = sd.status().ok()?;
+    match status["BackendState"].as_str()? {
+        "NeedsLogin" if status["AuthURL"].as_str().is_some_and(|u| !u.is_empty()) => Some(
+            "the tailnet wants this device to log in again: its auth key was not accepted (revoked, expired or used up) \
+             or the device was removed; forget this device's tailnet identity and join with a new key",
+        ),
+        "NeedsMachineAuth" => Some("the tailnet's admin has to approve this device first"),
+        _ => None,
+    }
+}
+
+impl Drop for Tailnet {
+    fn drop(&mut self) {
+        self.sd.close();
+    }
+}
+
+/// The state holds the node key: only this user may read it.
+fn restrict(dir: &Path) -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o700))
+        .with_context(|| format!("restricting {}", dir.display()))
+}
+
+/// libtailscale's connections are stream sockets ([[EXP-20261112-rq8kgc]]).
+fn stream(fd: OwnedFd) -> io::Result<UnixStream> {
+    let s = std::os::unix::net::UnixStream::from(fd);
+    s.set_nonblocking(true)?;
+    UnixStream::from_std(s)
+}
+
+/// Finds `addr` among the peers of a `tailscale_status_json` document.
+fn peer_in(status: &serde_json::Value, addr: &str) -> Option<Peer> {
+    let ip = addr
+        .parse::<std::net::SocketAddr>()
+        .map(|a| a.ip().to_string())
+        .unwrap_or_else(|_| addr.trim_matches(['[', ']']).to_string());
+    let peer = status["Peer"].as_object()?.values().find(|p| {
+        p["TailscaleIPs"]
+            .as_array()
+            .is_some_and(|ips| ips.iter().any(|i| i.as_str() == Some(ip.as_str())))
+    })?;
+    let tags: Vec<&str> = peer["Tags"].as_array().into_iter().flatten().filter_map(|t| t.as_str()).collect();
+    let login = if tags.is_empty() {
+        status["User"][peer["UserID"].to_string()]["LoginName"].as_str().unwrap_or_default().to_string()
+    } else {
+        tags.join(",")
+    };
+    Some(Peer {
+        host: peer["HostName"].as_str().unwrap_or_default().to_string(),
+        login,
+    })
+}
+
+/// A connection accepted on a tailnet.
+pub struct Conn {
+    io: UnixStream,
+    remote: Remote,
+}
+
+impl Conn {
+    /// Who is calling.
+    pub fn remote(&self) -> &Remote {
+        &self.remote
+    }
+}
+
+impl AsyncRead for Conn {
+    fn poll_read(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut ReadBuf<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.io).poll_read(cx, buf)
+    }
+}
+
+impl AsyncWrite for Conn {
+    fn poll_write(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<io::Result<usize>> {
+        Pin::new(&mut self.io).poll_write(cx, buf)
+    }
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.io).poll_flush(cx)
+    }
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.io).poll_shutdown(cx)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn status() -> serde_json::Value {
+        json!({
+            "Peer": {
+                "nodekey:a": {"HostName": "rogue", "TailscaleIPs": ["100.1.2.3", "fd7a::1"], "UserID": 7, "Tags": null},
+                "nodekey:b": {"HostName": "ci", "TailscaleIPs": ["100.9.9.9"], "UserID": 8, "Tags": ["tag:ci", "tag:x"]}
+            },
+            "User": {"7": {"LoginName": "me@github"}, "8": {"LoginName": "tagged-devices"}}
+        })
+    }
+
+    #[test]
+    fn a_peer_is_named_by_its_address_with_or_without_a_port() {
+        let want = Some(Peer { host: "rogue".into(), login: "me@github".into() });
+        assert_eq!(peer_in(&status(), "100.1.2.3"), want);
+        assert_eq!(peer_in(&status(), "100.1.2.3:52011"), want);
+        assert_eq!(peer_in(&status(), "[fd7a::1]:7700"), want);
+        assert_eq!(peer_in(&status(), "fd7a::1"), want);
+    }
+
+    #[test]
+    fn a_tagged_peer_is_named_by_its_tags_and_a_stranger_not_at_all() {
+        assert_eq!(peer_in(&status(), "100.9.9.9").unwrap().login, "tag:ci,tag:x");
+        assert_eq!(peer_in(&status(), "100.4.4.4"), None);
+        assert_eq!(peer_in(&json!({}), "100.1.2.3"), None);
+    }
+
+    #[tokio::test]
+    async fn a_first_start_without_a_key_is_refused_before_touching_the_network() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = Tailnet::start(Options {
+            name: "home".into(),
+            dir: dir.path().join("home"),
+            hostname: "sandhi-test".into(),
+            authkey: None,
+            ephemeral: true,
+            give_up_after: None,
+        })
+        .await
+        .unwrap_err();
+        assert!(format!("{err:#}").contains("no auth key"), "{err:#}");
+    }
+
+    /// Against Tailscale's control plane, so not in the default run: a join whose key the
+    /// tailnet refuses, with a limit set, ends with why instead of waiting for ever.
+    #[tokio::test(flavor = "multi_thread")]
+    #[ignore = "needs the network"]
+    async fn a_refused_join_is_given_up_with_why() {
+        let dir = tempfile::tempdir().unwrap();
+        let started = std::time::Instant::now();
+        let err = Tailnet::start(Options {
+            name: "refused".into(),
+            dir: dir.path().join("id"),
+            hostname: "sandhi-refused-test".into(),
+            authkey: Some(AuthKey::Value("tskey-auth-kNotARealKey-0000000000000000000000000000000000".into())),
+            ephemeral: true,
+            give_up_after: Some(std::time::Duration::from_secs(30)),
+        })
+        .await
+        .err()
+        .expect("a made-up key is refused");
+        let took = started.elapsed();
+        eprintln!("given up after {took:?}: {err:#}");
+        assert!(took < std::time::Duration::from_secs(35), "took {took:?}");
+    }
+}
