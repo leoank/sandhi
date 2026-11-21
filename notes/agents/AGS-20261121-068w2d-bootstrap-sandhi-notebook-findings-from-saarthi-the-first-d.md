@@ -6,10 +6,10 @@ title: "Bootstrap sandhi: notebook, findings from saarthi, the first decisions a
 model: claude-opus-5-5
 harness: claude-code
 started: 2026-11-21T00:10+00:00
-finished: null
+finished: 2026-11-21T02:00+00:00
 created_entities: [PHS-20261121-07gk9n, PHS-20261121-07gk4r, PHS-20261121-07gkgk, PHS-20261121-07gkvm]
 edited_entities: [PHS-20261121-07gk4r]
-outcome: pending          # done | failed | aborted | pending
+outcome: done             # done | failed | aborted | pending
 created: 2026-11-21
 author: agent:claude
 ---
