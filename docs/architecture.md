@@ -47,12 +47,16 @@ flowchart LR
 - `sandhi connect <host> <port>` speaks to the daemon over a unix socket and splices
   stdio, for ssh's `ProxyCommand` and `git` over ssh (phase 1).
 - The DNS server and the loopback listeners (phase 2); the TUN (phase 3).
+- `homeModules.sandhi` (`nix/module.nix`) runs `sandhi up` as a launchd agent or systemd
+  user service, with the config rendered from its options and installed at the clients'
+  default path; neusis imports it on every machine (ADR-0006).
 
 ## Stack
 - Rust 2024, tokio (ADR-0002).
 - `crates/tailnet` (`sandhi-tailnet`): libtailscale's C API declared by hand; libtailscale
   `ac7ed43` built by the flake as a static archive (ADR-0002).
-- Nix flake: the dev shell, `checks.workspace` (cargo build and test), `checks.notebook`.
+- Nix flake: the dev shell, `checks.workspace` (cargo build and test), `checks.module` (the
+  home-manager module, ADR-0006), `checks.notebook`; `homeModules.sandhi`.
 
 ## Phases
 - Phase 0: the tailnet crate and the design. Check: `nix flake check`.

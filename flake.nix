@@ -14,7 +14,14 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
 
-      perSystem = { pkgs, system, lib, ... }:
+      # The home-manager module that runs `sandhi up` for the user (ADR-0006); it defaults
+      # to this flake's package for the host's system.
+      flake.homeModules.sandhi = {
+        _file = ./nix/module.nix;
+        imports = [ (import ./nix/module.nix inputs.self) ];
+      };
+
+      perSystem = { config, pkgs, system, lib, ... }:
         let
           # libtailscale as a static archive for the tailnet crate (ADR-0002), as saarthi
           # builds it: `ac7ed43` marks the descriptors it hands out close-on-exec
@@ -89,6 +96,13 @@
             inherit src;
             cargoLock.lockFile = ./Cargo.lock;
             LIBTAILSCALE_LIB_DIR = "${libtailscale}/lib";
+          };
+
+          # The module evaluates to the service it promises and renders a config sandhi reads.
+          checks.module = import ./nix/module-tests.nix {
+            inherit pkgs lib;
+            inherit (inputs) nixpkgs self;
+            inherit (config.packages) sandhi;
           };
 
           # The notebook passes yajna validate.
