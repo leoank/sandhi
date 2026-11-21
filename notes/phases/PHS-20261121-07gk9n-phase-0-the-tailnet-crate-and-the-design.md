@@ -4,9 +4,9 @@ type: phase
 schema_version: 1
 title: "Phase 0: the tailnet crate and the design"
 project: PRJ-0001
-status: planned           # planned | active | done | abandoned
+status: done
 since: null               # the commit it started at: yajna phase start
-until: null               # the commit it finished at: yajna phase done
+until: 72b0907b4b4d1a01cb537c1d2f575d72c46c3a54
 created: 2026-11-21
 author: agent:claude
 tags: []

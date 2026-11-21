@@ -29,7 +29,7 @@ saarthi, which runs tsnet in its hub, node and phone.
 The project's phases, one line each, ticked when the phase is done; each phase's page holds
 its goal and its own checklist. `yajna new phase` adds one; `yajna tasks` lists the open
 items with the rest.
-- [ ] [[PHS-20261121-07gk9n]] Phase 0: the tailnet crate and the design
+- [x] [[PHS-20261121-07gk9n]] Phase 0: the tailnet crate and the design
 - [ ] [[PHS-20261121-07gk4r]] Phase 1: connect and inbound, the end of tailnet switching
 - [ ] [[PHS-20261121-07gkgk]] Phase 2: DNS and a loopback address per peer
 - [ ] [[PHS-20261121-07gkvm]] Phase 3: a TUN for every port and UDP

@@ -9,6 +9,7 @@ and never renumbered. A decision that changes an earlier one supersedes it; both
 | [ADR-0002](ADR-0002-rust-with-saarthi-s-tailnet-crate-copied.md) | Rust, saarthi's tailnet crate copied until sandhi is stable | accepted |
 | [ADR-0003](ADR-0003-real-tailnet-names-and-stable-addresses.md) | The real tailnet names, never the system tailnet's, with stable addresses | accepted |
 | [ADR-0004](ADR-0004-a-loopback-address-per-peer-then-a-tun.md) | A loopback address per peer with listed ports, then a TUN | accepted |
+| [ADR-0005](ADR-0005-a-toml-config-and-a-line-protocol-on-a-user-socket.md) | A TOML config with a table per kind of network; `connect` and `status` as one line on a user-only socket | accepted |
 
 Each record:
 

@@ -8,7 +8,7 @@ harness: claude-code
 started: 2026-11-21T00:10+00:00
 finished: null
 created_entities: [PHS-20261121-07gk9n, PHS-20261121-07gk4r, PHS-20261121-07gkgk, PHS-20261121-07gkvm]
-edited_entities: []
+edited_entities: [PHS-20261121-07gk4r]
 outcome: pending          # done | failed | aborted | pending
 created: 2026-11-21
 author: agent:claude
@@ -33,3 +33,7 @@ decisions and saarthi's tailnet crate.
 - Renamed neumesh to sandhi before the first commit (the owner's choice, after names on
   the theme of yajna, saarthi, manthan, nitya, panini), and named a backend's per-network
   identity its dutavas (दूतावास, an embassy). Created `github:leoank/sandhi`, public.
+- Phase 1, items 1.1 to 1.4 (the owner, 2026-11-21: "start phase 1"): the `sandhi` crate
+  (config, router, backend trait, tailnet dutavas, daemon, client, CLI) with 14 unit and
+  integration tests against a fake backend, `packages.sandhi` in the flake, ADR-0005; a
+  smoke test on rogue with two ephemeral dutavas on leoank, inbound and outbound.

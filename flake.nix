@@ -53,7 +53,21 @@
           };
         in
         {
-          packages = { inherit libtailscale; };
+          packages = rec {
+            inherit libtailscale;
+            # The `sandhi` binary; tests run in checks.workspace.
+            sandhi = pkgs.rustPlatform.buildRustPackage {
+              pname = "sandhi";
+              version = "0.1.0";
+              inherit src;
+              cargoLock.lockFile = ./Cargo.lock;
+              LIBTAILSCALE_LIB_DIR = "${libtailscale}/lib";
+              cargoBuildFlags = [ "--bin" "sandhi" ];
+              doCheck = false;
+              meta.mainProgram = "sandhi";
+            };
+            default = sandhi;
+          };
 
           devShells.default = pkgs.mkShell {
             packages = [
