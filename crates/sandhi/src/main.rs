@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::Duration;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -26,8 +27,20 @@ enum Command {
     Status,
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
+/// How long the way out waits for the runtime's blocking threads.
+const SHUTDOWN_LIMIT: Duration = Duration::from_secs(5);
+
+fn main() -> Result<()> {
+    let rt = tokio::runtime::Runtime::new()?;
+    let result = rt.block_on(cli());
+    // A join that tsnet keeps waiting on stays in `tailscale_up` on the blocking pool, and a
+    // runtime dropped the usual way waits for it forever: the daemon then outlived SIGTERM
+    // ([[EXP-20261127-jwk3y3]]). Give the blocking threads a few seconds, then leave.
+    rt.shutdown_timeout(SHUTDOWN_LIMIT);
+    result
+}
+
+async fn cli() -> Result<()> {
     let cli = Cli::parse();
     let quiet = !matches!(cli.command, Command::Up);
     tracing_subscriber::fmt()
