@@ -1,0 +1,56 @@
+=== rogue at 2026-11-27T17:31:50Z
+sandhi status:
+leoank tailnet ready 100.91.65.59,fd7a:115c:a1e0::4c3a:413c forwards 22->127.0.0.1:22
+system tailnet:
+ID    Tailnet        Account
+dd9a  cs-lab-ts      runxi*
+4bd7  shntnu.github  shntnu
+=== ssh sandhi-ghost001.leoank
+Warning: Permanently added 'sandhi-ghost001.leoank' (ED25519) to the list of known hosts.
+hostname: ghost001
+sandhi status:
+leoank tailnet ready 100.80.45.8,fd7a:115c:a1e0::173a:2d09 forwards 22->127.0.0.1:22
+system tailnet:
+  "CurrentTailnet": {
+    "Name": "runxi-shen.github",
+    "StableID": "ToFdp7kzyV11CNTRL",
+    "MagicDNSSuffix": "tail27b080.ts.net",
+ok: sandhi-ghost001.leoank in 1 s
+=== ssh ghost001
+Warning: Permanently added 'ghost001' (ED25519) to the list of known hosts.
+hostname: ghost001
+sandhi status:
+leoank tailnet ready 100.80.45.8,fd7a:115c:a1e0::173a:2d09 forwards 22->127.0.0.1:22
+system tailnet:
+  "CurrentTailnet": {
+    "Name": "runxi-shen.github",
+    "StableID": "ToFdp7kzyV11CNTRL",
+    "MagicDNSSuffix": "tail27b080.ts.net",
+ok: ghost001 in 2 s
+=== ssh sandhi-curiosity.leoank
+Warning: Permanently added 'sandhi-curiosity.leoank' (ED25519) to the list of known hosts.
+hostname: curiosity
+sandhi status:
+leoank tailnet ready 100.73.209.0,fd7a:115c:a1e0::6c3a:d101 forwards 22->127.0.0.1:22
+system tailnet:
+  "CurrentTailnet": {
+    "Name": "runxi-shen.github",
+    "StableID": "ToFdp7kzyV11CNTRL",
+    "MagicDNSSuffix": "tail27b080.ts.net",
+ok: sandhi-curiosity.leoank in 0 s
+=== ssh curiosity
+Warning: Permanently added 'curiosity' (ED25519) to the list of known hosts.
+hostname: curiosity
+sandhi status:
+leoank tailnet ready 100.73.209.0,fd7a:115c:a1e0::6c3a:d101 forwards 22->127.0.0.1:22
+system tailnet:
+  "CurrentTailnet": {
+    "Name": "runxi-shen.github",
+    "StableID": "ToFdp7kzyV11CNTRL",
+    "MagicDNSSuffix": "tail27b080.ts.net",
+ok: curiosity in 0 s
+=== host keys (ed25519)
+256 SHA256:4FX5FI3wfoOqUkCg4K1FLIKKamkCtKpvPHpQ4vKQHlQ ghost001 (ED25519)
+256 SHA256:4FX5FI3wfoOqUkCg4K1FLIKKamkCtKpvPHpQ4vKQHlQ sandhi-ghost001.leoank (ED25519)
+256 SHA256:6L+opZ0DSl99jzxC4GN01hLatgBQ1nIruRqx/k6fsVI curiosity (ED25519)
+256 SHA256:6L+opZ0DSl99jzxC4GN01hLatgBQ1nIruRqx/k6fsVI sandhi-curiosity.leoank (ED25519)

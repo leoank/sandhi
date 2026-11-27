@@ -4,8 +4,8 @@ type: experiment
 schema_version: 1
 title: Does sandhi carry ssh between the fleet's machines over leoank while their system tailnet is runxi?
 project: PRJ-0001
-status: active            # planned | active | paused | concluded | abandoned
-outcome: null             # null | positive | negative | inconclusive | infra
+status: concluded         # planned | active | paused | concluded | abandoned
+outcome: positive         # null | positive | negative | inconclusive | infra
 influenced_by: []
 created: 2026-11-27
 author: agent:claude
@@ -51,6 +51,16 @@ rejects a bare link here. Metric runs also land in results.tsv.
 - [[RUN-20261127-hv43pm]] ghost001 answered through sandhi and over runxi with the same host key; curiosity answered over runxi with its dutavas ready, yet not through sandhi
 - [[RUN-20261127-hw411b]] curiosity reached through sandhi by its leoank address at once: forward and sshd work, the name does not
 - [[RUN-20261127-hw8vay]] curiosity's dutavas is sandhi-curiosity-2: older ephemeral devices from earlier boots keep the name; leoank is tail73031.ts.net
+- [[RUN-20261127-k89h5w]] after curiosity kept its identity: rogue reached ghost001 and curiosity by name through sandhi and over runxi, each with one host key
 
 ## Conclusion
-Written once, by a human, when status becomes `concluded`.
+H1 holds. With neusis's `sandhi-<host>` bundles, rogue reaches ghost001 and curiosity by ssh
+over leoank through `sandhi connect` while every machine's system tailnet stays runxi, and
+each answers on both tailnets with one host key ([[RUN-20261127-hv43pm]] for ghost001,
+[[RUN-20261127-k89h5w]] for both). curiosity failed by name at first: its live disk joined a
+new device at every boot, and the name stayed with an offline one
+([[RUN-20261127-hw8vay]]); by address it worked ([[RUN-20261127-hw411b]]). Keeping its
+identity on SPARKDATA (neusis ADR-0023, resting on [[EXP-20261127-j1rwdg]]) fixed that.
+
+For the project: phase 1's live check is met. Still to see: curiosity keeping its name
+across a reboot on an ISO built with ADR-0023.

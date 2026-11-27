@@ -7,8 +7,8 @@ model: claude-opus-5-5
 harness: claude-code
 started: 2026-11-27T16:12+00:00
 finished: null
-created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay, EXP-20261127-j1rwdg, RUN-20261127-j1sbbh, RUN-20261127-j811rw, RUN-20261127-jg8x1f, EXP-20261127-jwk3y3, RUN-20261127-jwkqeb, RUN-20261127-jwwze0, RUN-20261127-jxq9p4]
-edited_entities: [AGS-20261121-2gzfyy]
+created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay, EXP-20261127-j1rwdg, RUN-20261127-j1sbbh, RUN-20261127-j811rw, RUN-20261127-jg8x1f, EXP-20261127-jwk3y3, RUN-20261127-jwkqeb, RUN-20261127-jwwze0, RUN-20261127-jxq9p4, RUN-20261127-k89h5w]
+edited_entities: [AGS-20261121-2gzfyy, PHS-20261121-07gk4r]
 outcome: pending          # done | failed | aborted | pending
 created: 2026-11-27
 author: agent:claude
@@ -51,4 +51,11 @@ a kickstart.
   hand-built runtime and a 5 s `shutdown_timeout`; the fixed binary exits in 5 s. Two
   ephemeral `sandhi-test-sigterm` devices joined, removed by the tailnet on stop. Conclusion
   drafted for review. Not committed yet.
+- Committed and pushed the SIGTERM fix (`832d6a7`) and its notes (`45f1290`); bumped sandhi
+  in neusis (`0b2292f`, pushed by the owner). The owner moved curiosity's identity by hand
+  and deployed: it came back at the same address from `/var/lib/sandhi-ank`, and the save
+  unit put it on SPARKDATA.
+- [[RUN-20261127-k89h5w]]: rogue reached ghost001 and curiosity by name through sandhi and
+  over runxi; [[EXP-20261127-hsprp3]] concluded positive as a draft for review. Ticked 1.5
+  and 1.6; added 1.7, curiosity's name across a reboot on the new ISO.
 

@@ -33,9 +33,15 @@ done ones. The project page's *Progress* lists this phase on one line.
   daemon; one reached the other's forward to a local HTTP server (41 ms, caller
   `sandhi-test-b (tag:neusis)`), and saarthi-hub answered an HTTP/2 preface on 7700
   ([[AGS-20261121-068w2d]])
-- [ ] 1.5 neusis: a home-manager module (launchd agent, systemd user service), auth keys
-  as agenix secrets, ssh `ProxyCommand` for the backends' domains
-- [ ] 1.6 Checked live: rogue reaches ghost001 and curiosity on leoank while its system
+- [x] 1.5 neusis: a home-manager module (launchd agent, systemd user service), auth keys
+  as agenix secrets, ssh `ProxyCommand` for the backends' domains (ADR-0006; neusis
+  `users/ank/sandhi.nix`); a first join waits for its key (ADR-0007)
+- [x] 1.6 Checked live: rogue reaches ghost001 and curiosity on leoank while its system
   tailnet is runxi, and ghost001 is reachable on two tailnets at once
+  ([[EXP-20261127-hsprp3]]); curiosity's identity kept on SPARKDATA (neusis ADR-0023,
+  [[EXP-20261127-j1rwdg]]); `sandhi up` exits on SIGTERM with a stuck join
+  ([[EXP-20261127-jwk3y3]])
+- [ ] 1.7 curiosity keeps `sandhi-curiosity` across a reboot on an ISO built with neusis
+  ADR-0023
 
 ## Notes
