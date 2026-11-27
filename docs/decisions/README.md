@@ -11,6 +11,7 @@ and never renumbered. A decision that changes an earlier one supersedes it; both
 | [ADR-0004](ADR-0004-a-loopback-address-per-peer-then-a-tun.md) | A loopback address per peer with listed ports, then a TUN | accepted |
 | [ADR-0005](ADR-0005-a-toml-config-and-a-line-protocol-on-a-user-socket.md) | A TOML config with a table per kind of network; `connect` and `status` as one line on a user-only socket | accepted |
 | [ADR-0006](ADR-0006-a-home-manager-module-in-this-repo.md) | A home-manager module here runs `sandhi up` as a user service, its config rendered from options and installed where clients look | accepted |
+| [ADR-0007](ADR-0007-a-missing-auth-key-is-waited-for.md) | A first join waits for an auth key file not there yet, up to the join limit | accepted |
 
 Each record:
 
