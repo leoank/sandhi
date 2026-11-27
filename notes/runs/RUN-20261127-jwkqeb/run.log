@@ -1,0 +1,9 @@
+=== sandhi 0.1.0 at 2026-11-27T17:12:07Z
+status: leoank tailnet failed: joining tailnet leoank: tailscale_up: tsnet.Up: backend: invalid key: unable to validate API key
+=== SIGTERM
+exited 0 s after SIGTERM, status 0
+=== daemon log (last lines)
+2026-11-27T17:12:07.035810Z  INFO sandhi::daemon: listening socket=/tmp/nix-shell.4jWEdq/tmp.clhSMJfDez/s.sock
+2026/11/27 17:12:07 tsnet running state path /tmp/nix-shell.4jWEdq/tmp.clhSMJfDez/state/leoank/tailscaled.state
+2026/11/27 17:12:07 tsnet starting with hostname "sandhi-test-sigterm", varRoot "/tmp/nix-shell.4jWEdq/tmp.clhSMJfDez/state/leoank"
+2026-11-27T17:12:07.248917Z ERROR sandhi::daemon: failed backend=leoank why=joining tailnet leoank: tailscale_up: tsnet.Up: backend: invalid key: unable to validate API key

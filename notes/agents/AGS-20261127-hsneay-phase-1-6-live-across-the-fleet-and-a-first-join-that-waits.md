@@ -7,7 +7,7 @@ model: claude-opus-5-5
 harness: claude-code
 started: 2026-11-27T16:12+00:00
 finished: null
-created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay, EXP-20261127-j1rwdg, RUN-20261127-j1sbbh, RUN-20261127-j811rw, RUN-20261127-jg8x1f]
+created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay, EXP-20261127-j1rwdg, RUN-20261127-j1sbbh, RUN-20261127-j811rw, RUN-20261127-jg8x1f, EXP-20261127-jwk3y3, RUN-20261127-jwkqeb, RUN-20261127-jwwze0, RUN-20261127-jxq9p4]
 edited_entities: [AGS-20261121-2gzfyy]
 outcome: pending          # done | failed | aborted | pending
 created: 2026-11-27
@@ -45,4 +45,10 @@ a kickstart.
   Conclusion drafted for review.
 - neusis (its AGS-20261127-jkrp31): curiosity's identity on SPARKDATA (neusis ADR-0023), the
   leoank domain `tail73031.ts.net`, sandhi bumped; committed and pushed.
+- neusis committed and pushed (its four commits); sandhi's notes pushed (`7b33d34`).
+- [[EXP-20261127-jwk3y3]]: the SIGTERM hang reproduced with a join tsnet kept waiting on,
+  sampled (the main thread waits on tokio's blocking pool), and fixed in `main.rs` with a
+  hand-built runtime and a 5 s `shutdown_timeout`; the fixed binary exits in 5 s. Two
+  ephemeral `sandhi-test-sigterm` devices joined, removed by the tailnet on stop. Conclusion
+  drafted for review. Not committed yet.
 

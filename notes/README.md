@@ -70,3 +70,4 @@ One line per experiment after its link, what it asks and what came of it; `yajna
 rejects a bare link here. Newest last.
 - [[EXP-20261127-hsprp3]] Does sandhi carry ssh between the fleet's machines over leoank while their system tailnet is runxi?
 - [[EXP-20261127-j1rwdg]] a dutavas resumes from its tailscaled.state alone, without a key, if not ephemeral: the basis for saving curiosity's on SPARKDATA
+- [[EXP-20261127-jwk3y3]] sandhi up outlived SIGTERM after a join tsnet kept waiting on (tokio's blocking pool); a 5 s shutdown_timeout fixes it

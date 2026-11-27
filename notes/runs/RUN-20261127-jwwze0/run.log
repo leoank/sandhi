@@ -1,0 +1,8 @@
+=== sandhi 0.1.0 at 2026-11-27T17:12:36Z
+=== first start: ephemeral, with the key
+status: leoank tailnet ready 100.66.49.45,fd7a:115c:a1e0::5a3a:312e
+exited 1 s after SIGTERM, status 0
+=== second start: its state, no key
+status: leoank tailnet failed: joining tailnet leoank: the tailnet wants this device to log in again: its auth key was not accepted (revoked, expired or used up) or the device was removed; forget this device's tailnet identity and join with a new key
+still alive 15 s after SIGTERM; sampling
+sample written
