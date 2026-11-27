@@ -7,7 +7,7 @@ model: claude-opus-5-5
 harness: claude-code
 started: 2026-11-27T16:12+00:00
 finished: null
-created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay]
+created_entities: [EXP-20261127-hsprp3, RUN-20261127-hsxqrz, RUN-20261127-hv43pm, RUN-20261127-hw411b, RUN-20261127-hw8vay, EXP-20261127-j1rwdg, RUN-20261127-j1sbbh, RUN-20261127-j811rw, RUN-20261127-jg8x1f]
 edited_entities: [AGS-20261121-2gzfyy]
 outcome: pending          # done | failed | aborted | pending
 created: 2026-11-27
@@ -35,4 +35,14 @@ a kickstart.
 - Proposed conclusion, for the owner: positive for ghost001; for curiosity the mechanism
   works and its naming does not; an identity that survives curiosity's reboots (state on
   SPARKDATA) would fix the name, not ephemeral.
+- Committed and pushed the key-race fix (`c03bafd`), the yajna bump with its refreshed skill
+  (`f1716aa`) and 1.6's notes (`eef36e5`).
+- [[EXP-20261127-j1rwdg]] before building curiosity's persistence: a non-ephemeral dutavas
+  resumes from `tailscaled.state` alone ([[RUN-20261127-jg8x1f]]); an ephemeral one did not
+  ([[RUN-20261127-j811rw]]); the first attempt hung on a fault of the script
+  ([[RUN-20261127-j1sbbh]], aborted). Twice a test state directory with a node key was left
+  under /tmp and deleted by hand. Left `sandhi-test-restore` on leoank for the owner.
+  Conclusion drafted for review.
+- neusis (its AGS-20261127-jkrp31): curiosity's identity on SPARKDATA (neusis ADR-0023), the
+  leoank domain `tail73031.ts.net`, sandhi bumped; committed and pushed.
 

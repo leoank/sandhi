@@ -1,0 +1,7 @@
+=== first start, joining with the key, at 2026-11-27T16:50:51Z
+leoank tailnet ready 100.75.139.121,fd7a:115c:a1e0::1f3a:8b7a
+files the first start left: profile-data tailscaled.log.conf tailscaled.log1.txt tailscaled.log2.txt tailscaled.state tsnet.log 
+=== second start from tailscaled.state alone, no key
+leoank tailnet ready 100.75.139.121,fd7a:115c:a1e0::1f3a:8b7a
+=== result
+same address: 100.75.139.121,fd7a:115c:a1e0::1f3a:8b7a

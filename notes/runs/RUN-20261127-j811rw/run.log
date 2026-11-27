@@ -1,0 +1,5 @@
+=== first start, joining with the key, at 2026-11-27T16:36:57Z
+leoank tailnet ready 100.118.254.52,fd7a:115c:a1e0::143a:fe35
+files the first start left: profile-data tailscaled.log.conf tailscaled.log1.txt tailscaled.log2.txt tailscaled.state tsnet.log 
+=== second start from tailscaled.state alone, no key
+leoank tailnet failed: joining tailnet leoank: the tailnet wants this device to log in again: its auth key was not accepted (revoked, expired or used up) or the device was removed; forget this device's tailnet identity and join with a new key
