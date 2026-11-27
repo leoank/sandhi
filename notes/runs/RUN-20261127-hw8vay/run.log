@@ -1,0 +1,14 @@
+=== curiosity's own tsnet log, at 2026-11-27T16:16:41Z
+      3 sandhi-curiosity
+    174 sandhi-curiosity-2
+     42 sandhi-curiosity-2.tail73031.ts.net
+total 3136
+drwx------ 3 ank users     160 2026-11-27 01:33:59.261499614 +0000 .
+drwx------ 3 ank users      60 2026-11-27 01:32:19.352665051 +0000 ..
+drwx------ 3 ank users      60 2026-11-27 01:33:59.256499619 +0000 profile-data
+-rw------- 1 ank users       0 2026-11-27 16:16:39.995017470 +0000 tailscaled.log1.txt
+-rw------- 1 ank users       0 2026-11-27 16:16:35.626001789 +0000 tailscaled.log2.txt
+-rw------- 1 ank users     209 2026-11-27 01:32:19.374664493 +0000 tailscaled.log.conf
+-rw------- 1 ank users    2523 2026-11-27 01:33:59.261499614 +0000 tailscaled.state
+-rw-r--r-- 1 ank users 3199104 2026-11-27 16:16:39.612016090 +0000 tsnet.log
+=== rogue's tsnet log

@@ -1,0 +1,34 @@
+=== rogue at 2026-11-27T16:13:03Z
+sandhi status:
+leoank tailnet ready 100.91.65.59,fd7a:115c:a1e0::4c3a:413c forwards 22->127.0.0.1:22
+system tailnet:
+ID    Tailnet        Account
+dd9a  cs-lab-ts      runxi*
+4bd7  shntnu.github  shntnu
+=== ssh sandhi-ghost001.leoank
+Warning: Permanently added 'sandhi-ghost001.leoank' (ED25519) to the list of known hosts.
+hostname: ghost001
+sandhi status:
+leoank tailnet ready 100.80.45.8,fd7a:115c:a1e0::173a:2d09 forwards 22->127.0.0.1:22
+system tailnet:
+Access denied: profiles access denied
+
+Use 'sudo tailscale switch --list'.
+To not require root, use 'sudo tailscale set --operator=$USER' once.
+FAILED: sandhi-ghost001.leoank (exit 1) after 1 s
+=== ssh ghost001
+hostname: ghost001
+sandhi status:
+leoank tailnet ready 100.80.45.8,fd7a:115c:a1e0::173a:2d09 forwards 22->127.0.0.1:22
+system tailnet:
+Access denied: profiles access denied
+
+Use 'sudo tailscale switch --list'.
+To not require root, use 'sudo tailscale set --operator=$USER' once.
+FAILED: ghost001 (exit 1) after 1 s
+=== ssh sandhi-curiosity.leoank
+Connection timed out during banner exchange
+Connection to UNKNOWN port 65535 timed out
+FAILED: sandhi-curiosity.leoank (exit 255) after 60 s
+=== host keys (ed25519)
+256 SHA256:4FX5FI3wfoOqUkCg4K1FLIKKamkCtKpvPHpQ4vKQHlQ sandhi-ghost001.leoank (ED25519)

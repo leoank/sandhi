@@ -1,0 +1,11 @@
+=== curiosity over runxi at 2026-11-27T16:16:26Z
+sandhi status: leoank tailnet ready 100.73.209.0,fd7a:115c:a1e0::6c3a:d101 forwards 22->127.0.0.1:22
+names in tsnet.log:
+grep: /home/ank/.local/state/sandhi/leoank/tsnet.log: binary file matches
+uptime:  16:16:27  up  14:56,  1 user,  load average: 0.94, 1.42, 1.38
+sshd on 127.0.0.1:22: closed
+curiosity's leoank address: 100.73.209.0
+=== rogue -> 100.73.209.0.leoank through sandhi
+Warning: Permanently added '100.73.209.0.leoank' (ED25519) to the list of known hosts.
+curiosity
+ok in 0 s

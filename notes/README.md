@@ -68,3 +68,4 @@ What was tried and dropped, and why, so nobody tries it again.
 ## Experiments
 One line per experiment after its link, what it asks and what came of it; `yajna validate`
 rejects a bare link here. Newest last.
+- [[EXP-20261127-hsprp3]] Does sandhi carry ssh between the fleet's machines over leoank while their system tailnet is runxi?
